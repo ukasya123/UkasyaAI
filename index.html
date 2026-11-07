@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ukas AI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+  body {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 900px;
+    height: 100vh;
+    max-height: 900px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  /* ===== LOGIN / REGISTER ===== */
+  #authPage {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 40px 30px;
+    margin: auto;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+
+  #authPage h1 {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #00d2ff, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  #authPage p.sub {
+    text-align: center;
+    color: #aaa;
+    margin-bottom: 28px;
+    font-size: 0.9rem;
+  }
+
+  .input-group { margin-bottom: 16px; }
+
+  .input-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    color: #ccc;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.3s;
+    font-family: inherit;
+  }
+
+  .input-group input:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 10px rgba(168,85,247,0.4);
+  }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #00d2ff, #a855f7);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: inherit;
+  }
+
+  .btn:hover { opacity: 0.85; transform: translateY(-2px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .error-msg {
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 12px;
+    min-height: 20px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .toggle-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+
+  .toggle-link a {
+    color: #a855f7;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .toggle-link a:hover { text-decoration: underline; }
+
+  /* ===== CHAT PAGE ===== */
+  #chatPage { display: none; flex-direction: column; height: 100%; }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(10px);
+    border-radius: 15px 15px 0 0;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-bottom: none;
+  }
+
+  .header h2 {
+    font-size: 1.3rem;
+    background: linear-gradient(90deg, #00d2ff, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header-btns { display: flex; gap: 8px; align-items: center; }
+
+  .icon-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.3s;
+    font-family: inherit;
+  }
+
+  .icon-btn:hover { background: rgba(255,255,255,0.2); }
+
+  .user-email {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-right: 5px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chat-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 15px;
+    background: rgba(0,0,0,0.25);
+    border-left: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .chat-box::-webkit-scrollbar { width: 6px; }
+  .chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+  /* PERBAIKAN: Kotak chat dibuat lebih ringkas */
+  .msg {
+    max-width: 75%; /* Dibatasi agar tidak terlalu panjang ke samping */
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    line-height: 1.45;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .msg.user {
+    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+    width: fit-content; /* Menyesuaikan panjang teks */
+  }
+
+  .msg.ai {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-bottom-left-radius: 4px;
+    width: fit-content; /* Menyesuaikan panjang teks */
+  }
+
+  .msg.ai.typing { color: #a855f7; font-style: italic; }
+
+  .input-area {
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 0 0 15px 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: none;
+  }
+
+  .input-area textarea {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 0.92rem;
+    resize: none;
+    height: 48px;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .input-area textarea:focus { border-color: #a855f7; }
+
+  .input-area button {
+    padding: 0 22px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #00d2ff, #a855f7);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: inherit;
+  }
+
+  .input-area button:hover { opacity: 0.85; }
+  .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== LOGIN / REGISTER ===== -->
+  <div id="authPage">
+    <h1>Ukas AI</h1>
+    <p class="sub" id="authSubtitle">Masuk untuk mulai mengobrol</p>
+
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="emailInput" placeholder="nama@email.com" autocomplete="username">
+    </div>
+
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="passwordInput" placeholder="Minimal 6 karakter" autocomplete="current-password">
+    </div>
+
+    <div class="input-group" id="confirmGroup" style="display:none;">
+      <label>Konfirmasi Password</label>
+      <input type="password" id="confirmInput" placeholder="Ulangi password">
+    </div>
+
+    <button class="btn" id="authBtn" onclick="handleAuth()">Masuk</button>
+
+    <div class="error-msg" id="authMsg"></div>
+
+    <div class="toggle-link">
+      <span id="toggleText">Belum punya akun?</span>
+      <a id="toggleBtn" onclick="toggleMode()">Daftar</a>
+    </div>
+  </div>
+
+  <!-- ===== CHAT PAGE ===== -->
+  <div id="chatPage">
+    <div class="header">
+      <h2>Ukas AI</h2>
+      <div class="header-btns">
+        <span class="user-email" id="userEmail"></span>
+        <button class="icon-btn" onclick="logout()">Keluar</button>
+      </div>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+      <div class="msg ai">Halo! Saya Ukas AI 🤖. Ada yang bisa saya bantu hari ini?</div>
+    </div>
+
+    <div class="input-area">
+      <textarea id="userInput" placeholder="Tulis pesan..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+      <button id="sendBtn" onclick="sendMessage()">Kirim</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ================================================
+  // 🔑 KONFIGURASI AI (API KEY & MODEL)
+  // ================================================
+  const GROQ_API_KEY = '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';
+  const GROQ_MODEL = 'openai/gpt-oss-120b';
+  // ================================================
+
+  let currentUser = null;
+  let chatHistory = [];
+  let isRegisterMode = false;
+
+  // ===== DATABASE AKUN =====
+  function getAccounts() {
+    try {
+      let data = localStorage.getItem('ukas_accounts');
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveAccounts(accounts) {
+    try {
+      localStorage.setItem('ukas_accounts', JSON.stringify(accounts));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function showMsg(msg, isSuccess = false) {
+    const el = document.getElementById('authMsg');
+    if(el) {
+      el.style.color = isSuccess ? '#4ade80' : '#ff6b6b';
+      el.textContent = msg;
+    }
+  }
+
+  // ===== TOGGLE MENU =====
+  function toggleMode() {
+    isRegisterMode = !isRegisterMode;
+    showMsg('');
+
+    const subtitle = document.getElementById('authSubtitle');
+    const authBtn = document.getElementById('authBtn');
+    const confirmGroup = document.getElementById('confirmGroup');
+    const toggleText = document.getElementById('toggleText');
+    const toggleBtn = document.getElementById('toggleBtn');
+
+    if (isRegisterMode) {
+      subtitle.textContent = 'Buat akun baru untuk memulai';
+      authBtn.textContent = 'Daftar';
+      confirmGroup.style.display = 'block';
+      toggleText.textContent = 'Sudah punya akun?';
+      toggleBtn.textContent = 'Masuk';
+    } else {
+      subtitle.textContent = 'Masuk untuk mulai mengobrol';
+      authBtn.textContent = 'Masuk';
+      confirmGroup.style.display = 'none';
+      toggleText.textContent = 'Belum punya akun?';
+      toggleBtn.textContent = 'Daftar';
+    }
+  }
+
+  function handleAuth() {
+    if (isRegisterMode) {
+      register();
+    } else {
+      login();
+    }
+  }
+
+  // ===== PROSES DAFTAR =====
+  function register() {
+    const email = document.getElementById('emailInput').value.trim().toLowerCase();
+    const password = document.getElementById('passwordInput').value;
+    const confirm = document.getElementById('confirmInput').value;
+    showMsg('');
+
+    if (!email || !password || !confirm) {
+      showMsg('Semua kolom wajib diisi!');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showMsg('Format email tidak valid!');
+      return;
+    }
+    if (password.length < 6) {
+      showMsg('Password minimal 6 karakter!');
+      return;
+    }
+    if (password !== confirm) {
+      showMsg('Konfirmasi password tidak cocok!');
+      return;
+    }
+
+    const accounts = getAccounts();
+    if (accounts.some(a => a.email === email)) {
+      showMsg('Email sudah terdaftar. Silakan masuk.');
+      return;
+    }
+
+    accounts.push({ email: email, password: password });
+    
+    if(saveAccounts(accounts)) {
+      showMsg('✅ Akun berhasil dibuat! Silakan masuk.', true);
+      setTimeout(() => {
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('confirmInput').value = '';
+        document.getElementById('emailInput').value = '';
+        showMsg('');
+        if (isRegisterMode) toggleMode();
+      }, 1500);
+    } else {
+      showMsg('Gagal mendaftar. Browser Anda memblokir penyimpanan.');
+    }
+  }
+
+  // ===== PROSES LOGIN =====
+  function login() {
+    const email = document.getElementById('emailInput').value.trim().toLowerCase();
+    const password = document.getElementById('passwordInput').value;
+    showMsg('');
+
+    if (!email || !password) {
+      showMsg('Email dan password wajib diisi!');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showMsg('Format email tidak valid!');
+      return;
+    }
+
+    const accounts = getAccounts();
+    const emailExists = accounts.some(a => a.email === email);
+    const account = accounts.find(a => a.email === email && a.password === password);
+
+    if (!emailExists) {
+      showMsg('Email belum terdaftar. Silakan daftar dulu.');
+      return;
+    }
+
+    if (!account) {
+      showMsg('Password salah. Silakan coba lagi.');
+      return;
+    }
+
+    showMsg('✅ Login berhasil...', true);
+    currentUser = email;
+    localStorage.setItem('ukas_user', email);
+
+    setTimeout(() => {
+      document.getElementById('authPage').style.display = 'none';
+      document.getElementById('chatPage').style.display = 'flex';
+      document.getElementById('userEmail').textContent = email;
+      document.getElementById('userInput').focus();
+      showMsg('');
+      document.getElementById('passwordInput').value = '';
+    }, 600);
+  }
+
+  // ===== LOGOUT =====
+  function logout() {
+    if (!confirm('Yakin ingin keluar?')) return;
+    currentUser = null;
+    chatHistory = [];
+    localStorage.removeItem('ukas_user');
+    document.getElementById('chatPage').style.display = 'none';
+    document.getElementById('authPage').style.display = 'block';
+    document.getElementById('emailInput').value = '';
+    document.getElementById('passwordInput').value = '';
+    showMsg('');
+    if (isRegisterMode) toggleMode();
+  }
+
+  // ===== CHAT AI =====
+  function addMessage(role, text) {
+    const box = document.getElementById('chatBox');
+    const div = document.createElement('div');
+    div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+    div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage('user', text);
+    chatHistory.push({ role: 'user', content: text });
+    input.value = '';
+    input.style.height = '48px';
+
+    sendBtn.disabled = true;
+    input.disabled = true;
+
+    const typingEl = addMessage('ai', 'Ukas AI sedang berpikir...');
+    typingEl.classList.add('typing');
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + GROQ_API_KEY
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [
+            { 
+              role: 'system', 
+              content: 'Kamu adalah Ukas AI, asisten AI yang ramah dan pintar. ATURAN WAJIB: Selalu jawab menggunakan Bahasa Indonesia yang baik dan benar. DILARANG KERAS menggunakan bahasa asing lain (seperti Vietnam, Inggris, dll) kecuali pengguna secara spesifik memintanya dalam bahasa tersebut. Jangan pernah menyelipkan kata-kata dari bahasa lain.' 
+            },
+            ...chatHistory
+          ],
+          temperature: 0.5,
+          max_tokens: 2048
+        })
+      });
+
+      if (!response.ok) {
+        let errMsg = 'Error ' + response.status;
+        try {
+          const errData = await response.json();
+          if (errData.error && errData.error.message) errMsg += ': ' + errData.error.message;
+        } catch (e) {}
+        throw new Error(errMsg);
+      }
+
+      const data = await response.json();
+      const reply = data.choices && data.choices[0] && data.choices[0].message
+        ? data.choices[0].message.content
+        : 'Maaf, tidak ada respons dari AI.';
+
+      typingEl.remove();
+      addMessage('ai', reply);
+      chatHistory.push({ role: 'assistant', content: reply });
+
+    } catch (error) {
+      typingEl.remove();
+      addMessage('ai', '❌ Terjadi kesalahan: ' + error.message);
+    } finally {
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  }
+
+  // ===== INIT SAAT HALAMAN DIBUKA =====
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('ukas_user');
+    const accounts = getAccounts();
+    
+    if (savedUser && accounts.some(a => a.email === savedUser)) {
+      currentUser = savedUser;
+      document.getElementById('authPage').style.display = 'none';
+      document.getElementById('chatPage').style.display = 'flex';
+      document.getElementById('userEmail').textContent = savedUser;
+    } else {
+      localStorage.removeItem('ukas_user');
+    }
+
+    const userInput = document.getElementById('userInput');
+    if(userInput) {
+      userInput.addEventListener('input', () => {
+        userInput.style.height = '48px';
+        userInput.style.height = Math.min(userInput.scrollHeight, 140) + 'px';
+      });
+    }
+
+    document.getElementById('passwordInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleAuth();
+    });
+    document.getElementById('confirmInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleAuth();
+    });
+  });
+</script>
+
+</body>
+</html>
